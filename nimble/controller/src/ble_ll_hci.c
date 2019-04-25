@@ -236,7 +236,9 @@ ble_ll_hci_rd_local_supp_feat(uint8_t *rspbuf, uint8_t *rsplen)
      *      BR/EDR not supported        (bit 5)
      *      LE supported (controller)   (bit 6)
      */
-    rsp->features = htole64(0x0000006000000000);
+    //rsp->features = htole64(0x0000006000000000);
+    uint8_t feat[] = {0xff, 0xfe, 0x0f, 0xfe, 0xdb, 0xff, 0x7b, 0x87};
+    memcpy(&rsp->features, feat, sizeof(feat));
 
     *rsplen = sizeof(*rsp);
     return BLE_ERR_SUCCESS;
@@ -262,6 +264,39 @@ ble_ll_hci_rd_local_supp_cmd(uint8_t *rspbuf, uint8_t *rsplen)
     return BLE_ERR_SUCCESS;
 }
 
+static int
+ble_ll_hci_rd_buf_size_cmd(uint8_t *rspbuf, uint8_t *rsplen)
+{
+    struct ble_hci_ip_rd_buf_size_rp *rsp = (void *) rspbuf;
+    memset(rspbuf, 0, sizeof(*rsp));
+
+    rspbuf[0] = 250;
+    rspbuf[2] = 70;
+    rspbuf[3] = 2;
+    *rsplen = sizeof(*rsp);
+    return BLE_ERR_SUCCESS;
+}
+
+static int
+ble_ll_hci_rd_local_extended_feat(uint8_t page, uint8_t *rspbuf, uint8_t *rsplen)
+{
+    memset(rspbuf, 0, 10);
+
+    if (page == 0) {
+        uint8_t feat[] = {0xff, 0xfe, 0x0f, 0xfe, 0xdb, 0xff, 0x7b, 0x87};
+        rspbuf[0] = 0;
+        rspbuf[1] = 1;
+        memcpy(&rspbuf[2], feat, sizeof(feat));
+    } else if (page == 1) {
+        uint8_t feat[] = {0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        rspbuf[0] = 1;
+        rspbuf[1] = 1;
+        memcpy(&rspbuf[2], feat, sizeof(feat));
+    }
+
+    *rsplen = 10;
+    return BLE_ERR_SUCCESS;
+}
 /**
  * Called to read the public device address of the device
  *
@@ -1416,6 +1451,29 @@ ble_ll_hci_cb_set_event_mask2(const uint8_t *cmdbuf, uint8_t len)
 }
 
 static int
+ble_ll_hci_ctlr_lp_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
+                            uint8_t *rspbuf, uint8_t *rsplen)
+{
+    int rc;
+    /* Get length from command */
+    /* Move past HCI command header */
+
+  switch (ocf) {
+  case 0x000f:
+      if (len == 2) {
+          rc = BLE_ERR_SUCCESS;
+          *rsplen = 0;
+      } else {
+          rc = BLE_ERR_INV_HCI_CMD_PARMS;
+      }
+      break;
+  default:
+      rc = BLE_ERR_UNKNOWN_HCI_CMD;
+      break;
+  }
+  return rc;
+}
+static int
 ble_ll_hci_ctlr_bb_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
                             uint8_t *rspbuf, uint8_t *rsplen)
 {
@@ -1427,6 +1485,55 @@ ble_ll_hci_ctlr_bb_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
     switch (ocf) {
     case BLE_HCI_OCF_CB_SET_EVENT_MASK:
         rc = ble_ll_hci_cb_set_event_mask(cmdbuf, len);
+        break;
+    case 0x0014:
+    {
+        char name[248] = "fake dual mode controller";
+        memcpy(rspbuf, name, 248);
+        *rsplen = 248;
+        rc = BLE_ERR_SUCCESS;
+        break;
+    }
+    case 0x0025:
+        *rsplen = 2;
+        //0x0060
+        rspbuf[0] = 0x60;
+        rspbuf[0] = 0x00;
+        rc = BLE_ERR_SUCCESS;
+        break;
+    case 0x0038:
+        rspbuf[0] = 1;
+        *rsplen = 1;
+        rc = BLE_ERR_SUCCESS;
+        break;
+    case 0x0039:
+        rspbuf[0] = 1;
+        //0x9e8b33
+        rspbuf[3] = 0x9e;
+        rspbuf[2] = 0x8b;
+        rspbuf[1] = 0x33;
+        *rsplen = 4;
+        rc = BLE_ERR_SUCCESS;
+        break;
+    case 0x0024:
+    case 0x0020:
+    case 0x0016:
+    case 0x001a:
+    case 0x001c:
+    case 0x001e:
+    case 0x0005:
+    case 0x0026:
+    case 0x0033:
+    case 0x0013:
+    case 0x0018:
+    case 0x006d:
+    case 0x0056:
+    case 0x0043:
+    case 0x0045:
+    case 0x007a:
+    case 0x0052:
+            rc = BLE_ERR_SUCCESS;
+            *rsplen = 0;
         break;
     case BLE_HCI_OCF_CB_RESET:
         if (len == 0) {
@@ -1449,6 +1556,24 @@ ble_ll_hci_ctlr_bb_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
         rc = BLE_ERR_UNKNOWN_HCI_CMD;
         break;
 #endif
+    case 0x0058:
+        //tx power
+        rspbuf[0] = 0;
+        *rsplen = 3;
+        rc = BLE_ERR_SUCCESS;
+        break;
+    case 0x0023:
+        /* Read clas off device */
+        {
+///            uint32_t cod = 0x5a020c;
+
+        rspbuf[0] = 0x0c;
+        rspbuf[1] = 0x02;
+        rspbuf[2] = 0x5a;
+        *rsplen = 3;
+        rc = BLE_ERR_SUCCESS;
+        }
+        break;
     case BLE_HCI_OCF_CB_SET_EVENT_MASK2:
         rc = ble_ll_hci_cb_set_event_mask2(cmdbuf, len);
         break;
@@ -1486,6 +1611,16 @@ ble_ll_hci_info_params_cmd_proc(const uint8_t *cmdbuf, uint8_t len,
     case BLE_HCI_OCF_IP_RD_LOC_SUPP_CMD:
         if (len == 0) {
             rc = ble_ll_hci_rd_local_supp_cmd(rspbuf, rsplen);
+        }
+        break;
+    case 0x0004:
+        if (len == 1) {
+            rc = ble_ll_hci_rd_local_extended_feat(cmdbuf[0], rspbuf, rsplen);
+        }
+        break;
+    case BLE_HCI_OCF_IP_RD_BUF_SIZE:
+        if (len == 0) {
+            rc = ble_ll_hci_rd_buf_size_cmd(rspbuf, rsplen);
         }
         break;
     case BLE_HCI_OCF_IP_RD_LOC_SUPP_FEAT:
@@ -1612,6 +1747,9 @@ ble_ll_hci_cmd_proc(struct ble_npl_event *ev)
     switch (ogf) {
     case BLE_HCI_OGF_LINK_CTRL:
         rc = ble_ll_hci_link_ctrl_cmd_proc(cmd->data, cmd->length, ocf);
+        break;
+    case BLE_HCI_OGF_LINK_POLICY:
+        rc = ble_ll_hci_ctlr_lp_cmd_proc(cmd->data, cmd->length, ocf, rspbuf, &rsplen);
         break;
     case BLE_HCI_OGF_CTLR_BASEBAND:
         rc = ble_ll_hci_ctlr_bb_cmd_proc(cmd->data, cmd->length, ocf, rspbuf, &rsplen);
