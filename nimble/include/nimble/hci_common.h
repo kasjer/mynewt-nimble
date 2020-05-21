@@ -189,6 +189,15 @@ struct ble_hci_rd_rssi_rp {
     int8_t   rssi;
 } __attribute__((packed));
 
+#define BLE_HCI_OCF_RD_ENC_KEY_SIZE                 (0x0008)
+struct ble_hci_rd_enc_key_size_cp {
+    uint16_t handle;
+} __attribute__((packed));
+struct ble_hci_rd_ecn_key_size_rp {
+    uint16_t handle;
+    uint8_t   key_size;
+} __attribute__((packed));
+
 /* List of OCF for LE commands (OGF = 0x08) */
 #define BLE_HCI_OCF_LE_SET_EVENT_MASK               (0x0001)
 struct ble_hci_le_set_event_mask_cp {

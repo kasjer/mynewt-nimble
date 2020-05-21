@@ -1641,6 +1641,19 @@ ble_ll_hci_info_params_cmd_proc(const uint8_t *cmdbuf, uint8_t len,
     return rc;
 }
 
+int
+ble_ll_conn_hci_rd_enc_key_size(const uint8_t *cmdbuf, uint8_t len, uint8_t *rspbuf, uint8_t *rsplen)
+{
+    const struct ble_hci_rd_enc_key_size_cp *cmd = (const void *) cmdbuf;
+    struct ble_hci_rd_ecn_key_size_rp *rsp = (void *) rspbuf;
+
+    rsp->handle = cmd->handle;
+    rsp->key_size = 16;
+
+    *rsplen = sizeof(*rsp);
+    return BLE_ERR_SUCCESS;
+}
+
 static int
 ble_ll_hci_status_params_cmd_proc(const uint8_t *cmdbuf, uint8_t len,
                                   uint16_t ocf, uint8_t *rspbuf,
@@ -1651,6 +1664,10 @@ ble_ll_hci_status_params_cmd_proc(const uint8_t *cmdbuf, uint8_t len,
     switch (ocf) {
     case BLE_HCI_OCF_RD_RSSI:
         rc = ble_ll_conn_hci_rd_rssi(cmdbuf, len, rspbuf, rsplen);
+        break;
+    case BLE_HCI_OCF_RD_ENC_KEY_SIZE:
+        /* Read encryption key size*/
+        rc = ble_ll_conn_hci_rd_enc_key_size(cmdbuf, len, rspbuf, rsplen);
         break;
     default:
         rc = BLE_ERR_UNKNOWN_HCI_CMD;

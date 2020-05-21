@@ -72,6 +72,13 @@
     BLE_SUPP_CMD_RD_RSSI                    \
 )
 
+#define BREDR_READ_ENC_KEY_SIZE             (1 << 4)
+
+#define BLE_LL_SUPP_CMD_OCTET_20            \
+(                                           \
+    BREDR_READ_ENC_KEY_SIZE                 \
+)
+
 /* Octet 25 */
 #define BLE_SUPP_CMD_LE_SET_EV_MASK         (1 << 0)
 #define BLE_SUPP_CMD_LE_RD_BUF_SIZE         (1 << 1)
@@ -515,7 +522,7 @@ const uint8_t g_ble_ll_supp_cmds[BLE_LL_SUPP_CMD_LEN] =
     0,
     0,
     0,
-    0,
+    BLE_LL_SUPP_CMD_OCTET_20,
     0,
     0,
     0,
