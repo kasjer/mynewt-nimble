@@ -1355,7 +1355,10 @@ ble_ll_hci_link_ctrl_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf)
         /* Send command status instead of command complete */
         rc += (BLE_ERR_MAX + 1);
         break;
-
+    case 0x0002:
+        /* Inquiry cancel */
+        rc = BLE_ERR_SUCCESS;
+        break;
     default:
         rc = BLE_ERR_UNKNOWN_HCI_CMD;
         break;
@@ -1515,17 +1518,18 @@ ble_ll_hci_ctlr_bb_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
         *rsplen = 4;
         rc = BLE_ERR_SUCCESS;
         break;
-    case 0x0024:
-    case 0x0020:
+    case 0x0005:
+    case 0x0013:
     case 0x0016:
+    case 0x0018:
     case 0x001a:
     case 0x001c:
     case 0x001e:
-    case 0x0005:
+    case 0x0020:
+    case 0x0024:
     case 0x0026:
     case 0x0033:
-    case 0x0013:
-    case 0x0018:
+    case 0x003a:
     case 0x006d:
     case 0x0056:
     case 0x0043:
