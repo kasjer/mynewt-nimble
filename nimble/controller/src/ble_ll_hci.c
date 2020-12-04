@@ -1532,7 +1532,6 @@ ble_ll_hci_ctlr_bb_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
     case 0x0020:
     case 0x0024:
     case 0x0026:
-    case 0x0033:
     case 0x003a:
     case 0x006d:
     case 0x0056:
