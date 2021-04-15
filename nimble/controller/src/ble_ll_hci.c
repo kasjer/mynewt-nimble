@@ -1419,9 +1419,9 @@ ble_ll_hci_cb_host_buf_size(const uint8_t *cmdbuf, uint8_t len)
     }
 
     /* We do not support SCO so those parameters should be set to 0 */
-    if (cmd->sco_num || cmd->sco_data_len) {
-        return BLE_ERR_INV_HCI_CMD_PARMS;
-    }
+//    if (cmd->sco_num || cmd->sco_data_len) {
+//        return BLE_ERR_INV_HCI_CMD_PARMS;
+//    }
 
     /*
      * Core 5.2 Vol 4 Part E section 7.3.39 states that "Both the Host and the
@@ -1495,7 +1495,7 @@ ble_ll_hci_ctlr_bb_cmd_proc(const uint8_t *cmdbuf, uint8_t len, uint16_t ocf,
         break;
     case 0x0014:
     {
-        char name[248] = "fake dual mode controller";
+        static char name[248] = "fake dual mode controller";
         memcpy(rspbuf, name, 248);
         *rsplen = 248;
         rc = BLE_ERR_SUCCESS;
