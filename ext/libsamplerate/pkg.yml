@@ -24,9 +24,17 @@ pkg.homepage: "http://mynewt.apache.org/"
 pkg.keywords:
     - samplerate
 
+pkg.build_profile: speed
+
 pkg.type: sdk
 
-pkg.cflags: -O3 -DHAVE_STDBOOL_H -fsingle-precision-constant -DHAVE_CONFIG_H -DNDEBUG -DLIBSAMPLERATE_SINGLE_PRECISION
+pkg.cflags: -DHAVE_STDBOOL_H -fsingle-precision-constant -Wdouble-promotion -DHAVE_CONFIG_H -DNDEBUG -DLIBSAMPLERATE_SINGLE_PRECISION
+#pkg.cflags:     -DHAVE_STDBOOL_H -fsingle-precision-constant -Wdouble-promotion
+pkg.cflags.ENABLE_SINC_BEST_CONVERTER: -DENABLE_SINC_BEST_CONVERTER
+pkg.cflags.ENABLE_SINC_MEDIUM_CONVERTER: -DENABLE_SINC_MEDIUM_CONVERTER
+pkg.cflags.ENABLE_SINC_FAST_CONVERTER: -DENABLE_SINC_FAST_CONVERTER
+pkg.cflags.LIBSAMPLER_NDEBUG: -DNDEBUG
+
 pkg.lflags: -lm
 
 app.cflags:
@@ -40,7 +48,7 @@ pkg.include_dirs:
 
 repository.libsamplerate:
     type: github
-    vers: 0.2.2-commit
-    branch: release-0.2.2
-    user: libsndfile
+    vers: 533e7aae2f43509d6864784628d380078e36919b-commit
+    branch: cc-double-to-float
+    user: codecoup-ext
     repo: libsamplerate
